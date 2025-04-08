@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,10 +10,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Copy, ChevronDown } from "lucide-react";
+import { Copy } from "lucide-react";
 
 const createPlayerSchema = z.object({
   playerName: z.string().min(3, { message: "Il nome deve contenere almeno 3 caratteri" }).max(30),
@@ -39,6 +39,7 @@ const formationOptions = [
 ];
 
 const CreatePlayerForm = () => {
+  const navigate = useNavigate();
   const [isCreateTeam, setIsCreateTeam] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
 
@@ -58,8 +59,26 @@ const CreatePlayerForm = () => {
 
     // Generate a mock invite link if creating a team
     if (values.teamOption === "create") {
-      const generatedLink = `https://fantafregna.com/join/${values.teamName?.toLowerCase().replace(/\s/g, "-")}-${Math.random().toString(36).substring(2, 8)}`;
+      const teamId = values.teamName?.toLowerCase().replace(/\s/g, "-") + "-" + Math.random().toString(36).substring(2, 8);
+      const generatedLink = `https://fantafregna.com/join/${teamId}`;
       setInviteLink(generatedLink);
+      
+      // Navigate to team dashboard with team data
+      toast.success(`Squadra ${values.teamName} creata con successo!`, {
+        description: "Ora puoi gestire la tua squadra.",
+      });
+      
+      // Delay navigation to allow toast to be shown
+      setTimeout(() => {
+        navigate(`/team/${teamId}`, { 
+          state: { 
+            teamName: values.teamName,
+            formation: values.formation,
+            playerName: values.playerName,
+            role: values.role
+          } 
+        });
+      }, 1500);
     } else {
       // For join team option
       toast.success(`${values.playerName} creato con successo!`, {

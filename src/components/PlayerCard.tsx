@@ -71,7 +71,7 @@ const PlayerCard = ({ player, detailed = false }: PlayerCardProps) => {
               <span className="text-sm font-medium">Pali</span>
               <span className="text-sm text-muted-foreground">{stats.pali}</span>
             </div>
-            <Progress value={paliRate} className="h-2 bg-muted" indicatorClassName="bg-fregna-secondary" />
+            <Progress value={paliRate} className="h-2 bg-muted" />
           </div>
           
           <div>
@@ -79,7 +79,7 @@ const PlayerCard = ({ player, detailed = false }: PlayerCardProps) => {
               <span className="text-sm font-medium">Conquiste</span>
               <span className="text-sm text-muted-foreground">{stats.conquiste}</span>
             </div>
-            <Progress value={successRate} className="h-2 bg-muted" indicatorClassName="bg-fregna-primary" />
+            <Progress value={successRate} className="h-2 bg-muted" />
           </div>
           
           {detailed && (

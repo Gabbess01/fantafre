@@ -11,6 +11,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Players from "./pages/Players";
 import Rules from "./pages/Rules";
 import CreatePlayer from "./pages/CreatePlayer";
+import TeamDashboard from "./pages/TeamDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/players" element={<Players />} />
               <Route path="/rules" element={<Rules />} />
               <Route path="/create-player" element={<CreatePlayer />} />
+              <Route path="/team/:teamId" element={<TeamDashboard />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
