@@ -1,13 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { Trophy, Star, Users, ArrowRight } from "lucide-react";
+import { Star, Users, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import PlayerCard from "@/components/PlayerCard";
 import StatsCard from "@/components/StatsCard";
-import { mockPlayers, getGlobalStats } from "@/data/mockData";
+import { getGlobalStats } from "@/data/mockData";
+import CreatePlayerForm from "@/components/CreatePlayerForm";
 
 const Home = () => {
-  const topPlayers = mockPlayers.slice(0, 3);
   const globalStats = getGlobalStats();
   const successRate = globalStats.totalTentativi > 0 
     ? Math.round((globalStats.totalConquiste / globalStats.totalTentativi) * 100) 
@@ -64,7 +63,7 @@ const Home = () => {
               title="Totale Pali"
               value={globalStats.totalPali}
               description="Il totale dei pali presi da tutti i giocatori"
-              icon={<Trophy className="w-5 h-5" />}
+              icon={<Star className="w-5 h-5" />}
               trend={{ value: 12, isPositive: true }}
             />
             <StatsCard
@@ -87,20 +86,7 @@ const Home = () => {
 
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold">Top Giocatori</h2>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/leaderboard" className="flex items-center gap-2">
-                Classifica completa 
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {topPlayers.map(player => (
-              <PlayerCard key={player.id} player={player} />
-            ))}
-          </div>
+          <CreatePlayerForm />
         </div>
       </section>
 
