@@ -1,11 +1,17 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trophy, Star, Users } from 'lucide-react';
+import { Trophy, Sun, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 
 const NavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <nav className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -17,9 +23,11 @@ const NavBar = () => {
         
         <div className="hidden md:flex items-center gap-6">
           <Link to="/" className="text-foreground hover:text-fregna-primary transition-colors">Home</Link>
-          <Link to="/leaderboard" className="text-foreground hover:text-fregna-primary transition-colors">Classifica</Link>
-          <Link to="/players" className="text-foreground hover:text-fregna-primary transition-colors">Giocatori</Link>
+          <Link to="/create-player" className="text-foreground hover:text-fregna-primary transition-colors">Crea Giocatore</Link>
           <Link to="/rules" className="text-foreground hover:text-fregna-primary transition-colors">Regolamento</Link>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
         </div>
         
         <div className="hidden md:block">
@@ -28,18 +36,23 @@ const NavBar = () => {
           </Button>
         </div>
         
-        <button 
-          className="md:hidden focus:outline-none" 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {isMobileMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+          <button 
+            className="focus:outline-none" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
       
       {/* Mobile menu */}
@@ -54,18 +67,11 @@ const NavBar = () => {
               Home
             </Link>
             <Link 
-              to="/leaderboard" 
+              to="/create-player" 
               className="py-2 text-foreground hover:text-fregna-primary transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Classifica
-            </Link>
-            <Link 
-              to="/players" 
-              className="py-2 text-foreground hover:text-fregna-primary transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Giocatori
+              Crea Giocatore
             </Link>
             <Link 
               to="/rules" 

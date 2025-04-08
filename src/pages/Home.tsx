@@ -4,7 +4,6 @@ import { Star, Users, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import StatsCard from "@/components/StatsCard";
 import { getGlobalStats } from "@/data/mockData";
-import CreatePlayerForm from "@/components/CreatePlayerForm";
 
 const Home = () => {
   const globalStats = getGlobalStats();
@@ -26,8 +25,10 @@ const Home = () => {
                 Scala la classifica e diventa il Re delle Relazioni!
               </p>
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                <Button size="lg" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
-                  Inizia ora
+                <Button size="lg" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary" asChild>
+                  <Link to="/create-player">
+                    Inizia ora
+                  </Link>
                 </Button>
                 <Button variant="outline" size="lg" asChild>
                   <Link to="/rules">
@@ -84,12 +85,6 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <CreatePlayerForm />
-        </div>
-      </section>
-
       <section className="py-12 bg-gradient-to-r from-fregna-primary/10 to-fregna-secondary/10">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4 gradient-text">
@@ -99,8 +94,10 @@ const Home = () => {
             Unisciti a FantaFregna oggi stesso e inizia a scalare la classifica.
             Conquista il podio e diventa una leggenda!
           </p>
-          <Button size="lg" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
-            Registrati ora
+          <Button size="lg" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary" asChild>
+            <Link to="/create-player">
+              Registrati ora
+            </Link>
           </Button>
         </div>
       </section>
