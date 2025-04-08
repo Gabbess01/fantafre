@@ -1,24 +1,19 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <div className="text-center max-w-md">
+        <h1 className="text-6xl font-bold mb-4 gradient-text">404</h1>
+        <p className="text-2xl font-medium mb-6">Pagina non trovata</p>
+        <p className="text-muted-foreground mb-8">
+          Sembra che tu abbia preso un palo anche con questa pagina...
+        </p>
+        <Button asChild>
+          <Link to="/">Torna alla Home</Link>
+        </Button>
       </div>
     </div>
   );
