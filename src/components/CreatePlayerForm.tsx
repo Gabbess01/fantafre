@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -12,32 +11,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Copy } from "lucide-react";
-
-const createPlayerSchema = z.object({
-  playerName: z.string().min(3, { message: "Il nome deve contenere almeno 3 caratteri" }).max(30),
-  role: z.string().min(1, { message: "Seleziona un ruolo" }),
-  teamOption: z.enum(["join", "create"]),
-  teamName: z.string().optional(),
-  teamId: z.string().optional(),
-  formation: z.string().optional(),
-});
-
-type CreatePlayerValues = z.infer<typeof createPlayerSchema>;
-
-const roleOptions = [
-  { value: "attaccante", label: "Attaccante" },
-  { value: "centrocampista", label: "Centrocampista" },
-  { value: "difensore", label: "Difensore" },
-  { value: "portiere", label: "Portiere" },
-];
-
-const formationOptions = [
-  { value: "4-3-3", label: "4-3-3" },
-  { value: "4-4-2", label: "4-4-2" },
-  { value: "3-5-2", label: "3-5-2" },
-  { value: "5-3-2", label: "5-3-2" },
-];
+import { CreatePlayerValues, createPlayerSchema, roleOptions } from "@/schemas/playerSchema";
+import { JoinTeamForm } from "./create-player/JoinTeamForm";
+import { CreateTeamForm } from "./create-player/CreateTeamForm";
+import { InviteLinkCard } from "./create-player/InviteLinkCard";
 
 const CreatePlayerForm = () => {
   const navigate = useNavigate();
@@ -101,11 +78,6 @@ const CreatePlayerForm = () => {
         });
       }, 1500);
     }
-  };
-
-  const copyInviteLink = () => {
-    navigator.clipboard.writeText(inviteLink);
-    toast.success("Link copiato negli appunti!");
   };
 
   return (
@@ -189,64 +161,8 @@ const CreatePlayerForm = () => {
               )}
             />
 
-            {teamOption === "join" && (
-              <FormField
-                control={form.control}
-                name="teamId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ID Squadra o Link di Invito</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Inserisci l'ID della squadra o il link di invito" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {teamOption === "create" && (
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="teamName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Squadra</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome della tua squadra" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="formation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Modulo</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleziona un modulo" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {formationOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
+            {teamOption === "join" && <JoinTeamForm form={form} />}
+            {teamOption === "create" && <CreateTeamForm form={form} />}
           </CardContent>
           <CardFooter>
             <Button type="submit" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
@@ -255,24 +171,7 @@ const CreatePlayerForm = () => {
           </CardFooter>
         </Card>
 
-        {inviteLink && (
-          <Card className="bg-muted/30">
-            <CardHeader>
-              <CardTitle>Squadra Creata!</CardTitle>
-              <CardDescription>
-                Condividi questo link di invito con gli altri giocatori
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-2">
-                <Input readOnly value={inviteLink} className="flex-1 bg-background" />
-                <Button size="icon" variant="outline" onClick={copyInviteLink}>
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {inviteLink && <InviteLinkCard inviteLink={inviteLink} />}
       </form>
     </Form>
   );
