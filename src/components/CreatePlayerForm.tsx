@@ -19,6 +19,7 @@ const createPlayerSchema = z.object({
   role: z.string().min(1, { message: "Seleziona un ruolo" }),
   teamOption: z.enum(["join", "create"]),
   teamName: z.string().optional(),
+  teamId: z.string().optional(),
   formation: z.string().optional(),
 });
 
@@ -57,18 +58,17 @@ const CreatePlayerForm = () => {
   const onSubmit = (values: CreatePlayerValues) => {
     console.log(values);
 
-    // Generate a mock invite link if creating a team
     if (values.teamOption === "create") {
+      // Generate team ID and invite link for new team
       const teamId = values.teamName?.toLowerCase().replace(/\s/g, "-") + "-" + Math.random().toString(36).substring(2, 8);
       const generatedLink = `https://fantafregna.com/join/${teamId}`;
       setInviteLink(generatedLink);
       
-      // Navigate to team dashboard with team data
       toast.success(`Squadra ${values.teamName} creata con successo!`, {
         description: "Ora puoi gestire la tua squadra.",
       });
       
-      // Delay navigation to allow toast to be shown
+      // Navigate to team dashboard with team data
       setTimeout(() => {
         navigate(`/team/${teamId}`, { 
           state: { 
@@ -80,10 +80,26 @@ const CreatePlayerForm = () => {
         });
       }, 1500);
     } else {
-      // For join team option
+      // For join team option - simulate joining an existing team
+      // In a real app, you'd validate the team ID or invite link
       toast.success(`${values.playerName} creato con successo!`, {
-        description: "Ora puoi unirti a una squadra usando un link di invito.",
+        description: "Stai per essere reindirizzato alla dashboard della squadra.",
       });
+      
+      // For demo purposes, create a mock team ID
+      const mockTeamId = "squadra-esistente-" + Math.random().toString(36).substring(2, 8);
+      
+      // Navigate to team dashboard with player data only
+      setTimeout(() => {
+        navigate(`/team/${mockTeamId}`, { 
+          state: { 
+            teamName: "Squadra Esistente",
+            playerName: values.playerName,
+            role: values.role,
+            isNewPlayer: true
+          } 
+        });
+      }, 1500);
     }
   };
 
@@ -173,6 +189,22 @@ const CreatePlayerForm = () => {
               )}
             />
 
+            {teamOption === "join" && (
+              <FormField
+                control={form.control}
+                name="teamId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID Squadra o Link di Invito</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Inserisci l'ID della squadra o il link di invito" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             {teamOption === "create" && (
               <div className="space-y-4">
                 <FormField
@@ -218,7 +250,7 @@ const CreatePlayerForm = () => {
           </CardContent>
           <CardFooter>
             <Button type="submit" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
-              {teamOption === "join" ? "Crea Giocatore" : "Crea Squadra"}
+              {teamOption === "join" ? "Unisciti alla Squadra" : "Crea Squadra"}
             </Button>
           </CardFooter>
         </Card>
