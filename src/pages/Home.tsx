@@ -18,11 +18,11 @@ const Home = () => {
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 gradient-text animate-float">
-                FantaFregna
+                FantaFre
               </h1>
               <p className="text-xl md:text-2xl mb-6 text-muted-foreground">
-                Il primo fantacalcio delle conquiste amorose.
-                Scala la classifica e diventa il Re delle Relazioni!
+                Il primo fanta delle non conquiste amorore.
+                Scala la classifica e diventa il re delle pali!
               </p>
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                 <Button size="lg" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary" asChild>
@@ -91,7 +91,7 @@ const Home = () => {
             Entra nella competizione
           </h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto text-muted-foreground">
-            Unisciti a FantaFregna oggi stesso e inizia a scalare la classifica.
+            Unisciti a FantaFre oggi stesso e inizia a scalare la classifica.
             Conquista il podio e diventa una leggenda!
           </p>
           <Button size="lg" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary" asChild>
