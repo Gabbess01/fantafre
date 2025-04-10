@@ -1,13 +1,31 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trophy, Sun, Moon } from 'lucide-react';
+import { Trophy, Sun, Moon, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from 'next-themes';
+import UserProfileDropdown from './UserProfileDropdown';
+
+// Mock auth state - in a real app, this would come from your auth provider
+const useAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // Set to true for demo purposes
+  const [user, setUser] = useState({
+    username: "GiocatoreFre",
+    avatar: "/placeholder.svg",
+    teamName: "Squadra Pro",
+  });
+
+  return {
+    isAuthenticated,
+    user,
+    logout: () => setIsAuthenticated(false),
+  };
+};
 
 const NavBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { isAuthenticated, user } = useAuth();
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -30,12 +48,16 @@ const NavBar = () => {
           </Button>
         </div>
         
-        <div className="hidden md:block">
-          <Link to="/login">
-            <Button variant="default" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
-              Accedi
-            </Button>
-          </Link>
+        <div className="hidden md:flex items-center gap-3">
+          {isAuthenticated ? (
+            <UserProfileDropdown user={user} />
+          ) : (
+            <Link to="/login">
+              <Button variant="default" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
+                Accedi
+              </Button>
+            </Link>
+          )}
         </div>
         
         <div className="md:hidden flex items-center gap-2">
@@ -82,15 +104,27 @@ const NavBar = () => {
             >
               Regolamento
             </Link>
-            <Link to="/login">
-              <Button 
-                variant="default" 
-                className="bg-gradient-to-r from-fregna-primary to-fregna-secondary w-full mt-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Accedi
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button 
+                  variant="default" 
+                  className="bg-gradient-to-r from-fregna-primary to-fregna-secondary w-full mt-2 flex items-center gap-2"
+                >
+                  <User className="w-5 h-5" />
+                  Il mio profilo
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/login">
+                <Button 
+                  variant="default" 
+                  className="bg-gradient-to-r from-fregna-primary to-fregna-secondary w-full mt-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Accedi
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       )}
