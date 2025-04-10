@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, Users, ArrowRight, Trophy, Plus, UserCircle, Gamepad2, UserPlus } from "lucide-react";
+import { Star, Users, ArrowRight, Trophy, Plus, UserCircle, Gamepad2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import StatsCard from "@/components/StatsCard";
 import PlayerUltimateCard from "@/components/PlayerUltimateCard";
