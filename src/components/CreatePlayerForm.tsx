@@ -42,38 +42,39 @@ const CreatePlayerForm = () => {
       setInviteLink(generatedLink);
       
       toast.success(`Squadra ${values.teamName} creata con successo!`, {
-        description: "Ora puoi gestire la tua squadra.",
+        description: "Ora puoi registrarti per gestire la tua squadra.",
       });
       
-      // Navigate to team dashboard with team data
+      // Instead of navigating directly to team dashboard, prompt for registration
       setTimeout(() => {
-        navigate(`/team/${teamId}`, { 
+        navigate(`/register`, { 
           state: { 
             teamName: values.teamName,
             formation: values.formation,
             playerName: values.playerName,
-            role: values.role
+            role: values.role,
+            teamId: teamId
           } 
         });
       }, 1500);
     } else {
       // For join team option - simulate joining an existing team
-      // In a real app, you'd validate the team ID or invite link
       toast.success(`${values.playerName} creato con successo!`, {
-        description: "Stai per essere reindirizzato alla dashboard della squadra.",
+        description: "Ora puoi registrarti per unirti alla squadra.",
       });
       
       // For demo purposes, create a mock team ID
       const mockTeamId = "squadra-esistente-" + Math.random().toString(36).substring(2, 8);
       
-      // Navigate to team dashboard with player data only
+      // Navigate to registration with player data
       setTimeout(() => {
-        navigate(`/team/${mockTeamId}`, { 
+        navigate(`/register`, { 
           state: { 
             teamName: "Squadra Esistente",
             playerName: values.playerName,
             role: values.role,
-            isNewPlayer: true
+            isNewPlayer: true,
+            teamId: mockTeamId
           } 
         });
       }, 1500);

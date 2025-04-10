@@ -31,9 +31,11 @@ const NavBar = () => {
         </div>
         
         <div className="hidden md:block">
-          <Button variant="default" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
-            Accedi
-          </Button>
+          <Link to="/login">
+            <Button variant="default" className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
+              Accedi
+            </Button>
+          </Link>
         </div>
         
         <div className="md:hidden flex items-center gap-2">
@@ -80,13 +82,15 @@ const NavBar = () => {
             >
               Regolamento
             </Link>
-            <Button 
-              variant="default" 
-              className="bg-gradient-to-r from-fregna-primary to-fregna-secondary w-full mt-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Accedi
-            </Button>
+            <Link to="/login">
+              <Button 
+                variant="default" 
+                className="bg-gradient-to-r from-fregna-primary to-fregna-secondary w-full mt-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Accedi
+              </Button>
+            </Link>
           </div>
         </div>
       )}

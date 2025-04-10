@@ -13,6 +13,8 @@ import Rules from "./pages/Rules";
 import CreatePlayer from "./pages/CreatePlayer";
 import TeamDashboard from "./pages/TeamDashboard";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,8 @@ const App = () => (
               <Route path="/rules" element={<Rules />} />
               <Route path="/create-player" element={<CreatePlayer />} />
               <Route path="/team/:teamId" element={<TeamDashboard />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
