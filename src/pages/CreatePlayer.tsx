@@ -1,5 +1,5 @@
 
-import { CreatePlayerForm } from "@/components/CreatePlayerForm";
+import CreatePlayerForm from "@/components/CreatePlayerForm";
 
 const CreatePlayer = () => {
   return (
