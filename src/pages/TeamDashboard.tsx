@@ -298,20 +298,6 @@ const TeamDashboard = () => {
                   <CardTitle className="text-2xl">{team.name}</CardTitle>
                   <CardDescription>Formazione {team.formation}</CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button asChild size="sm">
-                    <Link to="/team-events">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Prossimi Eventi
-                    </Link>
-                  </Button>
-                  <Button asChild size="sm" variant="default">
-                    <Link to="/team-events/create">
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Aggiungi Evento
-                    </Link>
-                  </Button>
-                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -762,6 +748,20 @@ const TeamDashboard = () => {
                     <p className="text-sm font-medium">Aperitivo di squadra</p>
                     <p className="text-xs text-muted-foreground">Martedì 22 Aprile</p>
                   </div>
+                   <div className="flex items-center gap-2">
+                  <Button asChild size="sm">
+                    <Link to="/team-events">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Prossimi Eventi
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="default">
+                    <Link to="/team-events/create">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Aggiungi Evento
+                    </Link>
+                  </Button>
+                </div>
                 </div>
               </div>
             </CardContent>
