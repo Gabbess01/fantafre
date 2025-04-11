@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Star, Trophy, Upload, Check, X } from "lucide-react";
+import { Star, Trophy, Upload, Check, X, PlusCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Stats = () => {
   const [activeTab, setActiveTab] = useState("add");
@@ -71,7 +71,6 @@ const Stats = () => {
       return;
     }
 
-    // In a real app, this would send data to your backend
     toast.success(
       `${eventType === 'palo' ? 'Palo' : 'Conquista'} registrato con successo!`,
       {
@@ -79,7 +78,6 @@ const Stats = () => {
       }
     );
 
-    // Reset form
     setGirlName("");
     setDetails("");
     setImage(null);
@@ -87,9 +85,14 @@ const Stats = () => {
   };
 
   const handleVote = (eventId: number, isPositive: boolean) => {
-    // In a real app, this would send the vote to your backend
     toast.success(`Voto registrato con successo!`);
   };
+
+  const handleStatRating = (eventId: number, stat: string) => {
+    toast.success(`Hai aggiunto +1 a ${stat}!`);
+  };
+
+  const statOptions = ["coraggio", "endurance", "dribbling", "humor", "resistenza", "social"];
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-12">
@@ -238,7 +241,7 @@ const Stats = () => {
                         />
                       </div>
                     )}
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center mb-4">
                       <div className="flex items-center gap-4">
                         <span className="text-sm flex items-center gap-1">
                           <Check className="h-4 w-4 text-green-500" />
@@ -269,6 +272,31 @@ const Stats = () => {
                           </Button>
                         </div>
                       )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">Aggiungi punti alle statistiche:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {statOptions.map(stat => (
+                          <TooltipProvider key={stat}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="h-8 px-2 py-1 capitalize"
+                                  onClick={() => handleStatRating(event.id, stat)}
+                                >
+                                  <PlusCircle className="h-3 w-3 mr-1" /> 
+                                  {stat}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Aggiungi +1 a {stat}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ))}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

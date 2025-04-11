@@ -4,7 +4,7 @@ import {
   Trophy, Users, Settings, LogOut, User, Award, 
   TrendingUp, Calendar, BarChart3, UserPlus 
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ interface TeamPlayer {
     conquiste: number;
     tentativi: number;
   };
+  fieldPosition?: string | null;
 }
 
 interface TeamData {
@@ -31,17 +32,34 @@ interface TeamData {
   players: TeamPlayer[];
 }
 
+interface PositionCoords {
+  [key: string]: { row: number; col: number };
+}
+
 const TeamDashboard = () => {
   const { teamId } = useParams();
   const location = useLocation();
   const [team, setTeam] = useState<TeamData | null>(null);
+  const [draggingPlayer, setDraggingPlayer] = useState<TeamPlayer | null>(null);
   
-  // Get team data from location state or generate mock data
+  const positionCoords: PositionCoords = {
+    'ST-L': { row: 0, col: 0 },
+    'ST-C': { row: 0, col: 1 },
+    'ST-R': { row: 0, col: 2 },
+    'CM-L': { row: 1, col: 0 },
+    'CM-C': { row: 1, col: 1 },
+    'CM-R': { row: 1, col: 2 },
+    'DF-L': { row: 2, col: 0 },
+    'DF-LC': { row: 2, col: 1 },
+    'DF-RC': { row: 2, col: 2 },
+    'DF-R': { row: 2, col: 3 },
+    'GK': { row: 3, col: 0 },
+  };
+  
   useEffect(() => {
     if (location.state?.team) {
       setTeam(location.state.team);
     } else {
-      // Mock data for demonstration purposes
       const mockTeam: TeamData = {
         name: location.state?.teamName || "Squadra Fantasy",
         formation: location.state?.formation || "4-3-3",
@@ -52,7 +70,8 @@ const TeamDashboard = () => {
             avatar: "/placeholder.svg",
             position: "attaccante",
             rating: 82,
-            stats: { pali: 5, conquiste: 3, tentativi: 12 }
+            stats: { pali: 5, conquiste: 3, tentativi: 12 },
+            fieldPosition: "ST-C"
           },
           {
             id: 2,
@@ -60,9 +79,36 @@ const TeamDashboard = () => {
             avatar: "/placeholder.svg",
             position: "centrocampista",
             rating: 75,
-            stats: { pali: 3, conquiste: 2, tentativi: 8 }
+            stats: { pali: 3, conquiste: 2, tentativi: 8 },
+            fieldPosition: "CM-C"
           },
-          // Add more mock players if needed
+          {
+            id: 3,
+            name: "Andrea",
+            avatar: "/placeholder.svg",
+            position: "difensore",
+            rating: 78,
+            stats: { pali: 2, conquiste: 1, tentativi: 5 },
+            fieldPosition: null
+          },
+          {
+            id: 4,
+            name: "Giovanni",
+            avatar: "/placeholder.svg",
+            position: "portiere",
+            rating: 70,
+            stats: { pali: 1, conquiste: 0, tentativi: 3 },
+            fieldPosition: null
+          },
+          {
+            id: 5,
+            name: "Paolo",
+            avatar: "/placeholder.svg",
+            position: "attaccante",
+            rating: 85,
+            stats: { pali: 7, conquiste: 4, tentativi: 15 },
+            fieldPosition: null
+          }
         ]
       };
       setTeam(mockTeam);
@@ -75,12 +121,47 @@ const TeamDashboard = () => {
     toast.success("Link copiato negli appunti!");
   };
 
+  const handleDragStart = (player: TeamPlayer) => {
+    setDraggingPlayer(player);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, position: string) => {
+    e.preventDefault();
+    if (!draggingPlayer || !team) return;
+
+    const updatedPlayers = team.players.map(p => {
+      if (p.id === draggingPlayer.id) {
+        return { ...p, fieldPosition: position };
+      }
+      if (p.fieldPosition === position) {
+        return { ...p, fieldPosition: null };
+      }
+      return p;
+    });
+
+    setTeam({ ...team, players: updatedPlayers });
+    toast.success(`${draggingPlayer.name} impostato come ${position}`);
+    setDraggingPlayer(null);
+  };
+
+  const getPlayerInPosition = (position: string): TeamPlayer | undefined => {
+    return team?.players.find(p => p.fieldPosition === position);
+  };
+
+  const getBenchPlayers = (): TeamPlayer[] => {
+    if (!team) return [];
+    return team.players.filter(player => player.fieldPosition === null);
+  };
+
   if (!team) return <div className="flex items-center justify-center h-screen">Caricamento...</div>;
   
   return (
     <div className="container mx-auto px-4 py-12 max-w-7xl">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left sidebar */}
         <div className="lg:col-span-3 space-y-6">
           <Card>
             <CardHeader className="relative p-0">
@@ -177,7 +258,6 @@ const TeamDashboard = () => {
           </nav>
         </div>
         
-        {/* Main content */}
         <div className="lg:col-span-6">
           <Card className="mb-6">
             <CardHeader>
@@ -186,92 +266,155 @@ const TeamDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="relative w-full aspect-[2/3] bg-gradient-to-b from-green-600/40 to-green-700/60 rounded-lg overflow-hidden">
-                {/* Pitch markings */}
                 <div className="absolute inset-0">
                   <div className="absolute top-1/2 left-0 right-0 border-t-2 border-white/30 transform -translate-y-1/2"></div>
                   <div className="absolute top-1/2 left-1/2 w-24 h-24 border-2 border-white/30 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
                 </div>
                 
-                {/* Player positions based on formation */}
                 <div className="absolute inset-0 grid grid-rows-4 p-4">
-                  {/* Attackers row */}
-                  <div className="relative grid grid-cols-3 items-center justify-items-center">
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-fregna-primary text-white">A</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-fregna-primary text-white">A</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-fregna-primary text-white">A</AvatarFallback>
-                      </Avatar>
-                    </div>
-                  </div>
+                  {["ST-L", "ST-C", "ST-R"].map((pos) => {
+                    const player = getPlayerInPosition(pos);
+                    return (
+                      <div 
+                        key={pos}
+                        className="player-position relative"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, pos)}
+                      >
+                        <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                          {player ? (
+                            <>
+                              <AvatarImage src={player.avatar} alt={player.name} />
+                              <AvatarFallback className="bg-fregna-primary text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                              <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
+                                {player.rating}
+                              </Badge>
+                            </>
+                          ) : (
+                            <AvatarFallback className="bg-fregna-primary/40 text-white">A</AvatarFallback>
+                          )}
+                        </Avatar>
+                      </div>
+                    );
+                  })}
                   
-                  {/* Midfielders row */}
-                  <div className="relative grid grid-cols-3 items-center justify-items-center">
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-fregna-secondary text-white">C</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-fregna-secondary text-white">C</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-fregna-secondary text-white">C</AvatarFallback>
-                      </Avatar>
-                    </div>
-                  </div>
+                  {["CM-L", "CM-C", "CM-R"].map((pos) => {
+                    const player = getPlayerInPosition(pos);
+                    return (
+                      <div 
+                        key={pos}
+                        className="player-position relative"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, pos)}
+                      >
+                        <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                          {player ? (
+                            <>
+                              <AvatarImage src={player.avatar} alt={player.name} />
+                              <AvatarFallback className="bg-fregna-secondary text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                              <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
+                                {player.rating}
+                              </Badge>
+                            </>
+                          ) : (
+                            <AvatarFallback className="bg-fregna-secondary/40 text-white">C</AvatarFallback>
+                          )}
+                        </Avatar>
+                      </div>
+                    );
+                  })}
                   
-                  {/* Defenders row */}
-                  <div className="relative grid grid-cols-4 items-center justify-items-center">
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-blue-500 text-white">D</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-blue-500 text-white">D</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-blue-500 text-white">D</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-blue-500 text-white">D</AvatarFallback>
-                      </Avatar>
-                    </div>
-                  </div>
+                  {["DF-L", "DF-LC", "DF-RC", "DF-R"].map((pos) => {
+                    const player = getPlayerInPosition(pos);
+                    return (
+                      <div 
+                        key={pos}
+                        className="player-position relative"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, pos)}
+                      >
+                        <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                          {player ? (
+                            <>
+                              <AvatarImage src={player.avatar} alt={player.name} />
+                              <AvatarFallback className="bg-blue-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                              <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
+                                {player.rating}
+                              </Badge>
+                            </>
+                          ) : (
+                            <AvatarFallback className="bg-blue-500/40 text-white">D</AvatarFallback>
+                          )}
+                        </Avatar>
+                      </div>
+                    );
+                  })}
                   
-                  {/* Goalkeeper row */}
-                  <div className="relative grid grid-cols-1 items-center justify-items-center">
-                    <div className="player-position">
-                      <Avatar className="w-12 h-12 border-2 border-white">
-                        <AvatarFallback className="bg-yellow-500 text-white">P</AvatarFallback>
-                      </Avatar>
-                    </div>
-                  </div>
+                  {["GK"].map((pos) => {
+                    const player = getPlayerInPosition(pos);
+                    return (
+                      <div 
+                        key={pos}
+                        className="player-position relative"
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, pos)}
+                      >
+                        <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                          {player ? (
+                            <>
+                              <AvatarImage src={player.avatar} alt={player.name} />
+                              <AvatarFallback className="bg-yellow-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                              <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
+                                {player.rating}
+                              </Badge>
+                            </>
+                          ) : (
+                            <AvatarFallback className="bg-yellow-500/40 text-white">P</AvatarFallback>
+                          )}
+                        </Avatar>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-              <div className="mt-4 flex justify-center">
-                <Button className="bg-gradient-to-r from-fregna-primary to-fregna-secondary">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Aggiungi Giocatore
-                </Button>
-              </div>
+              
+              <Card className="mt-8">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Panchina</CardTitle>
+                  <CardDescription>Trascina i giocatori sul campo per impostare la formazione</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-4 items-center justify-center">
+                    {getBenchPlayers().map(player => (
+                      <div 
+                        key={player.id} 
+                        draggable 
+                        onDragStart={() => handleDragStart(player)}
+                        className="cursor-grab relative"
+                      >
+                        <Avatar className="w-14 h-14 border-2 border-muted-foreground/20 hover:border-primary transition-colors">
+                          <AvatarImage src={player.avatar} alt={player.name} />
+                          <AvatarFallback>{player.name.substring(0, 1)}</AvatarFallback>
+                          <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
+                            {player.rating}
+                          </Badge>
+                        </Avatar>
+                        <p className="text-xs text-center mt-1 font-medium">{player.name}</p>
+                        <p className="text-xs text-center text-muted-foreground capitalize">{player.position}</p>
+                      </div>
+                    ))}
+                    {getBenchPlayers().length === 0 && (
+                      <p className="text-sm text-muted-foreground py-4">Tutti i giocatori sono sul campo</p>
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-0 justify-center">
+                  <Button size="sm" variant="outline">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Aggiungi Giocatore
+                  </Button>
+                </CardFooter>
+              </Card>
             </CardContent>
           </Card>
           
@@ -431,7 +574,6 @@ const TeamDashboard = () => {
           </Tabs>
         </div>
         
-        {/* Right sidebar */}
         <div className="lg:col-span-3 space-y-6">
           <Card>
             <CardHeader>
