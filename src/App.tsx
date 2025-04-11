@@ -17,6 +17,10 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import ProfileSettings from "./pages/ProfileSettings";
+import Stats from "./pages/Stats";
+import Teams from "./pages/Teams";
+import Cards from "./pages/Cards";
+import PlayerRatings from "./pages/PlayerRatings";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +43,10 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/settings" element={<ProfileSettings />} />
+              <Route path="/stats" element={<Stats />} />
+              <Route path="/teams" element={<Teams />} />
+              <Route path="/cards" element={<Cards />} />
+              <Route path="/player-ratings" element={<PlayerRatings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

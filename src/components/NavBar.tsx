@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trophy, Sun, Moon, User } from 'lucide-react';
+import { Trophy, Sun, Moon, User, Users, Star, BarChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from 'next-themes';
 import UserProfileDropdown from './UserProfileDropdown';
@@ -41,7 +41,13 @@ const NavBar = () => {
         
         <div className="hidden md:flex items-center gap-6">
           <Link to="/" className="text-foreground hover:text-fregna-primary transition-colors">Home</Link>
-          <Link to="/create-player" className="text-foreground hover:text-fregna-primary transition-colors">Crea Giocatore</Link>
+          {isAuthenticated && (
+            <>
+              <Link to="/teams" className="text-foreground hover:text-fregna-primary transition-colors">Squadre</Link>
+              <Link to="/cards" className="text-foreground hover:text-fregna-primary transition-colors">Cards</Link>
+              <Link to="/stats" className="text-foreground hover:text-fregna-primary transition-colors">Stats</Link>
+            </>
+          )}
           <Link to="/rules" className="text-foreground hover:text-fregna-primary transition-colors">Regolamento</Link>
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -90,13 +96,31 @@ const NavBar = () => {
             >
               Home
             </Link>
-            <Link 
-              to="/create-player" 
-              className="py-2 text-foreground hover:text-fregna-primary transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Crea Giocatore
-            </Link>
+            {isAuthenticated && (
+              <>
+                <Link 
+                  to="/teams" 
+                  className="py-2 text-foreground hover:text-fregna-primary transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Squadre
+                </Link>
+                <Link 
+                  to="/cards" 
+                  className="py-2 text-foreground hover:text-fregna-primary transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Cards
+                </Link>
+                <Link 
+                  to="/stats" 
+                  className="py-2 text-foreground hover:text-fregna-primary transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Stats
+                </Link>
+              </>
+            )}
             <Link 
               to="/rules" 
               className="py-2 text-foreground hover:text-fregna-primary transition-colors"
