@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from "react";
-import { useParams, useLocation, Link } from "react-router-dom";
+import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import { 
   Trophy, Users, Settings, LogOut, User, Award, 
-  TrendingUp, Calendar, BarChart3, UserPlus, PlusCircle
+  TrendingUp, Calendar, BarChart3, UserPlus, PlusCircle, ChevronsRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface TeamPlayer {
   avatar: string;
   position: string;
   rating: number;
+  isCaptain?: boolean;
   stats: {
     pali: number;
     conquiste: number;
@@ -32,29 +34,13 @@ interface TeamData {
   players: TeamPlayer[];
 }
 
-interface PositionCoords {
-  [key: string]: { row: number; col: number };
-}
-
 const TeamDashboard = () => {
   const { teamId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [team, setTeam] = useState<TeamData | null>(null);
   const [draggingPlayer, setDraggingPlayer] = useState<TeamPlayer | null>(null);
-  
-  const positionCoords: PositionCoords = {
-    'ST-L': { row: 0, col: 0 },
-    'ST-C': { row: 0, col: 1 },
-    'ST-R': { row: 0, col: 2 },
-    'CM-L': { row: 1, col: 0 },
-    'CM-C': { row: 1, col: 1 },
-    'CM-R': { row: 1, col: 2 },
-    'DF-L': { row: 2, col: 0 },
-    'DF-LC': { row: 2, col: 1 },
-    'DF-RC': { row: 2, col: 2 },
-    'DF-R': { row: 2, col: 3 },
-    'GK': { row: 3, col: 0 },
-  };
+  const [isCurrentUserCaptain, setIsCurrentUserCaptain] = useState<boolean>(true); // For demo purposes, set to true
   
   useEffect(() => {
     if (location.state?.team) {
@@ -70,6 +56,7 @@ const TeamDashboard = () => {
             avatar: "/placeholder.svg",
             position: "attaccante",
             rating: 82,
+            isCaptain: true,
             stats: { pali: 5, conquiste: 3, tentativi: 12 },
             fieldPosition: "ST-C"
           },
@@ -122,6 +109,10 @@ const TeamDashboard = () => {
   };
 
   const handleDragStart = (player: TeamPlayer) => {
+    if (!isCurrentUserCaptain) {
+      toast.error("Solo il capitano può modificare la formazione");
+      return;
+    }
     setDraggingPlayer(player);
   };
 
@@ -131,20 +122,49 @@ const TeamDashboard = () => {
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, position: string) => {
     e.preventDefault();
-    if (!draggingPlayer || !team) return;
+    if (!draggingPlayer || !team || !isCurrentUserCaptain) return;
+
+    // Check if dropping on same position or if another player is already in this position
+    const playerInPosition = getPlayerInPosition(position);
 
     const updatedPlayers = team.players.map(p => {
       if (p.id === draggingPlayer.id) {
+        // If player is already in this position, don't change anything
+        if (p.fieldPosition === position) {
+          return p;
+        }
         return { ...p, fieldPosition: position };
       }
+      // If another player is in this position, swap their positions
       if (p.fieldPosition === position) {
+        return { ...p, fieldPosition: draggingPlayer.fieldPosition };
+      }
+      return p;
+    });
+
+    setTeam({ ...team, players: updatedPlayers });
+    
+    if (playerInPosition) {
+      toast.success(`${draggingPlayer.name} ha scambiato posizione con ${playerInPosition.name}`);
+    } else {
+      toast.success(`${draggingPlayer.name} impostato come ${position}`);
+    }
+    setDraggingPlayer(null);
+  };
+
+  const handleReturnToBench = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (!draggingPlayer || !team || !isCurrentUserCaptain) return;
+
+    const updatedPlayers = team.players.map(p => {
+      if (p.id === draggingPlayer.id) {
         return { ...p, fieldPosition: null };
       }
       return p;
     });
 
     setTeam({ ...team, players: updatedPlayers });
-    toast.success(`${draggingPlayer.name} impostato come ${position}`);
+    toast.success(`${draggingPlayer.name} rimosso dalla formazione`);
     setDraggingPlayer(null);
   };
 
@@ -155,6 +175,12 @@ const TeamDashboard = () => {
   const getBenchPlayers = (): TeamPlayer[] => {
     if (!team) return [];
     return team.players.filter(player => player.fieldPosition === null);
+  };
+  
+  const viewPlayerProfile = (playerId: number) => {
+    // In a real app, navigate to the player's profile page
+    navigate(`/player/${playerId}`);
+    toast.info("Visualizzazione profilo giocatore");
   };
 
   if (!team) return <div className="flex items-center justify-center h-screen">Caricamento...</div>;
@@ -267,161 +293,217 @@ const TeamDashboard = () => {
         <div className="lg:col-span-6">
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="text-2xl">{team.name}</CardTitle>
-              <CardDescription>Formazione {team.formation}</CardDescription>
-              <div className="flex justify-end">
-                <Button asChild size="sm" className="mt-2">
-                  <Link to="/team-events/create">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Aggiungi Evento
-                  </Link>
-                </Button>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-2xl">{team.name}</CardTitle>
+                  <CardDescription>Formazione {team.formation}</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button asChild size="sm">
+                    <Link to="/team-events">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Prossimi Eventi
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="default">
+                    <Link to="/team-events/create">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Aggiungi Evento
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-9">
-                  <div className="relative w-full aspect-[2/3] bg-gradient-to-b from-green-600/40 to-green-700/60 rounded-lg overflow-hidden">
+              <div className="flex flex-row gap-4 h-[500px]">
+                <div className="flex-grow">
+                  <div className="relative w-full h-full bg-gradient-to-b from-green-600/40 to-green-700/60 rounded-lg overflow-hidden">
                     <div className="absolute inset-0">
                       <div className="absolute top-1/2 left-0 right-0 border-t-2 border-white/30 transform -translate-y-1/2"></div>
+                      <div className="absolute top-1/4 left-0 right-0 border-t border-white/20"></div>
+                      <div className="absolute top-3/4 left-0 right-0 border-t border-white/20"></div>
                       <div className="absolute top-1/2 left-1/2 w-24 h-24 border-2 border-white/30 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                      <div className="absolute left-1/4 top-0 bottom-0 border-l border-white/20"></div>
+                      <div className="absolute right-1/4 top-0 bottom-0 border-l border-white/20"></div>
+                      <div className="absolute left-0 right-0 bottom-5 h-16 border-b-2 border-l-2 border-r-2 border-white/30 rounded-b-xl mx-10"></div>
                     </div>
                     
                     <div className="absolute inset-0 grid grid-rows-4 p-4">
-                      {["ST-L", "ST-C", "ST-R"].map((pos) => {
-                        const player = getPlayerInPosition(pos);
-                        return (
-                          <div 
-                            key={pos}
-                            className="player-position relative"
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, pos)}
-                          >
-                            <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
-                              {player ? (
-                                <>
-                                  <AvatarImage src={player.avatar} alt={player.name} />
-                                  <AvatarFallback className="bg-fregna-primary text-white">{player.name.substring(0, 1)}</AvatarFallback>
-                                </>
-                              ) : (
-                                <AvatarFallback className="bg-fregna-primary/40 text-white">A</AvatarFallback>
+                      <div className="row-span-1 grid grid-cols-3 items-center justify-items-center">
+                        {["ST-L", "ST-C", "ST-R"].map((pos) => {
+                          const player = getPlayerInPosition(pos);
+                          return (
+                            <div 
+                              key={pos}
+                              className="player-position relative cursor-pointer"
+                              onDragOver={handleDragOver}
+                              onDrop={(e) => handleDrop(e, pos)}
+                              onClick={() => player && viewPlayerProfile(player.id)}
+                            >
+                              <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                                {player ? (
+                                  <>
+                                    <AvatarImage src={player.avatar} alt={player.name} />
+                                    <AvatarFallback className="bg-fregna-primary text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                                  </>
+                                ) : (
+                                  <AvatarFallback className="bg-fregna-primary/40 text-white">A</AvatarFallback>
+                                )}
+                              </Avatar>
+                              {player?.isCaptain && (
+                                <div className="absolute -left-3 -top-1 bg-yellow-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-20 border-2 border-white">
+                                  C
+                                </div>
                               )}
-                            </Avatar>
-                            {player && (
-                              <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
-                                {player.rating}
-                              </Badge>
-                            )}
-                          </div>
-                        );
-                      })}
+                              {player && (
+                                <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
+                                  {player.rating}
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                       
-                      {["CM-L", "CM-C", "CM-R"].map((pos) => {
-                        const player = getPlayerInPosition(pos);
-                        return (
-                          <div 
-                            key={pos}
-                            className="player-position relative"
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, pos)}
-                          >
-                            <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
-                              {player ? (
-                                <>
-                                  <AvatarImage src={player.avatar} alt={player.name} />
-                                  <AvatarFallback className="bg-fregna-secondary text-white">{player.name.substring(0, 1)}</AvatarFallback>
-                                </>
-                              ) : (
-                                <AvatarFallback className="bg-fregna-secondary/40 text-white">C</AvatarFallback>
+                      <div className="row-span-1 grid grid-cols-3 items-center justify-items-center">
+                        {["CM-L", "CM-C", "CM-R"].map((pos) => {
+                          const player = getPlayerInPosition(pos);
+                          return (
+                            <div 
+                              key={pos}
+                              className="player-position relative cursor-pointer"
+                              onDragOver={handleDragOver}
+                              onDrop={(e) => handleDrop(e, pos)}
+                              onClick={() => player && viewPlayerProfile(player.id)}
+                            >
+                              <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                                {player ? (
+                                  <>
+                                    <AvatarImage src={player.avatar} alt={player.name} />
+                                    <AvatarFallback className="bg-fregna-secondary text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                                  </>
+                                ) : (
+                                  <AvatarFallback className="bg-fregna-secondary/40 text-white">C</AvatarFallback>
+                                )}
+                              </Avatar>
+                              {player?.isCaptain && (
+                                <div className="absolute -left-3 -top-1 bg-yellow-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-20 border-2 border-white">
+                                  C
+                                </div>
                               )}
-                            </Avatar>
-                            {player && (
-                              <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
-                                {player.rating}
-                              </Badge>
-                            )}
-                          </div>
-                        );
-                      })}
+                              {player && (
+                                <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
+                                  {player.rating}
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                       
-                      {["DF-L", "DF-LC", "DF-RC", "DF-R"].map((pos) => {
-                        const player = getPlayerInPosition(pos);
-                        return (
-                          <div 
-                            key={pos}
-                            className="player-position relative"
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, pos)}
-                          >
-                            <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
-                              {player ? (
-                                <>
-                                  <AvatarImage src={player.avatar} alt={player.name} />
-                                  <AvatarFallback className="bg-blue-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
-                                </>
-                              ) : (
-                                <AvatarFallback className="bg-blue-500/40 text-white">D</AvatarFallback>
+                      <div className="row-span-1 grid grid-cols-4 items-center justify-items-center">
+                        {["DF-L", "DF-LC", "DF-RC", "DF-R"].map((pos) => {
+                          const player = getPlayerInPosition(pos);
+                          return (
+                            <div 
+                              key={pos}
+                              className="player-position relative cursor-pointer"
+                              onDragOver={handleDragOver}
+                              onDrop={(e) => handleDrop(e, pos)}
+                              onClick={() => player && viewPlayerProfile(player.id)}
+                            >
+                              <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                                {player ? (
+                                  <>
+                                    <AvatarImage src={player.avatar} alt={player.name} />
+                                    <AvatarFallback className="bg-blue-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                                  </>
+                                ) : (
+                                  <AvatarFallback className="bg-blue-500/40 text-white">D</AvatarFallback>
+                                )}
+                              </Avatar>
+                              {player?.isCaptain && (
+                                <div className="absolute -left-3 -top-1 bg-yellow-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-20 border-2 border-white">
+                                  C
+                                </div>
                               )}
-                            </Avatar>
-                            {player && (
-                              <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
-                                {player.rating}
-                              </Badge>
-                            )}
-                          </div>
-                        );
-                      })}
+                              {player && (
+                                <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
+                                  {player.rating}
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                       
-                      {["GK"].map((pos) => {
-                        const player = getPlayerInPosition(pos);
-                        return (
-                          <div 
-                            key={pos}
-                            className="player-position relative"
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, pos)}
-                          >
-                            <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
-                              {player ? (
-                                <>
-                                  <AvatarImage src={player.avatar} alt={player.name} />
-                                  <AvatarFallback className="bg-yellow-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
-                                </>
-                              ) : (
-                                <AvatarFallback className="bg-yellow-500/40 text-white">P</AvatarFallback>
+                      <div className="row-span-1 flex justify-center items-center">
+                        {["GK"].map((pos) => {
+                          const player = getPlayerInPosition(pos);
+                          return (
+                            <div 
+                              key={pos}
+                              className="player-position relative cursor-pointer"
+                              onDragOver={handleDragOver}
+                              onDrop={(e) => handleDrop(e, pos)}
+                              onClick={() => player && viewPlayerProfile(player.id)}
+                            >
+                              <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                                {player ? (
+                                  <>
+                                    <AvatarImage src={player.avatar} alt={player.name} />
+                                    <AvatarFallback className="bg-yellow-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                                  </>
+                                ) : (
+                                  <AvatarFallback className="bg-yellow-500/40 text-white">P</AvatarFallback>
+                                )}
+                              </Avatar>
+                              {player?.isCaptain && (
+                                <div className="absolute -left-3 -top-1 bg-yellow-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-20 border-2 border-white">
+                                  C
+                                </div>
                               )}
-                            </Avatar>
-                            {player && (
-                              <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
-                                {player.rating}
-                              </Badge>
-                            )}
-                          </div>
-                        );
-                      })}
+                              {player && (
+                                <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
+                                  {player.rating}
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="col-span-3">
+                <div className="w-20 flex flex-col">
                   <Card className="h-full">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Panchina</CardTitle>
-                      <CardDescription className="text-xs">Trascina i giocatori sul campo</CardDescription>
+                    <CardHeader className="p-2 text-center">
+                      <CardTitle className="text-xs">Panchina</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-2">
-                      <div className="flex flex-col gap-4 items-center overflow-auto max-h-[400px]">
+                    <CardContent className="p-2 h-full">
+                      <div 
+                        className="flex flex-col gap-4 items-center overflow-auto h-full p-2 border-2 border-dashed border-muted-foreground/20 rounded-md"
+                        onDragOver={handleDragOver}
+                        onDrop={handleReturnToBench}
+                      >
                         {getBenchPlayers().map(player => (
                           <div 
                             key={player.id} 
-                            draggable 
+                            draggable={isCurrentUserCaptain}
                             onDragStart={() => handleDragStart(player)}
-                            className="cursor-grab relative"
+                            className={`cursor-${isCurrentUserCaptain ? 'grab' : 'pointer'} relative`}
+                            onClick={() => viewPlayerProfile(player.id)}
                           >
                             <Avatar className="w-12 h-12 border-2 border-muted-foreground/20 hover:border-primary transition-colors">
                               <AvatarImage src={player.avatar} alt={player.name} />
                               <AvatarFallback>{player.name.substring(0, 1)}</AvatarFallback>
                             </Avatar>
+                            {player.isCaptain && (
+                              <div className="absolute -left-3 -top-1 bg-yellow-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-20 border-2 border-white">
+                                C
+                              </div>
+                            )}
                             <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0">
                               {player.rating}
                             </Badge>
@@ -434,12 +516,14 @@ const TeamDashboard = () => {
                         )}
                       </div>
                     </CardContent>
-                    <CardFooter className="pt-0 justify-center">
-                      <Button size="sm" variant="outline" className="w-full">
-                        <UserPlus className="mr-1 h-3 w-3" />
-                        <span className="text-xs">Aggiungi Giocatore</span>
-                      </Button>
-                    </CardFooter>
+                    {isCurrentUserCaptain && (
+                      <CardFooter className="p-2 justify-center">
+                        <Button size="sm" variant="outline" className="w-full">
+                          <UserPlus className="mr-1 h-3 w-3" />
+                          <span className="text-xs">Aggiungi</span>
+                        </Button>
+                      </CardFooter>
+                    )}
                   </Card>
                 </div>
               </div>
@@ -642,7 +726,7 @@ const TeamDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center text-center">
-                <Avatar className="h-24 w-24 mb-4">
+                <Avatar className="h-24 w-24 mb-4 cursor-pointer" onClick={() => viewPlayerProfile(99)}>
                   <AvatarImage src="/placeholder.svg" />
                   <AvatarFallback className="text-xl">GM</AvatarFallback>
                 </Avatar>
@@ -652,7 +736,7 @@ const TeamDashboard = () => {
                   <Award className="h-5 w-5 text-yellow-500 mr-1" />
                   <span className="font-bold">MVP</span>
                 </div>
-                <Button variant="outline" className="mt-4 w-full">
+                <Button variant="outline" className="mt-4 w-full" onClick={() => viewPlayerProfile(99)}>
                   Visualizza Profilo
                 </Button>
               </div>
@@ -689,3 +773,4 @@ const TeamDashboard = () => {
 };
 
 export default TeamDashboard;
+

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Star, Trophy, Upload, Check, X, PlusCircle } from "lucide-react";
+import { Star, Trophy, Upload, Check, X, PlusCircle, MinusCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+interface StatVote {
+  playerId: number;
+  statName: string;
+  value: number; // 1 for positive, -1 for negative
+}
 
 const Stats = () => {
   const [activeTab, setActiveTab] = useState("add");
@@ -17,34 +24,54 @@ const Stats = () => {
   const [details, setDetails] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  // Track player stat votes to prevent multiple votes
+  const [playerStatVotes, setPlayerStatVotes] = useState<StatVote[]>([]);
 
   // Mock events for the team
-  const teamEvents = [
+  const [teamEvents, setTeamEvents] = useState([
     {
       id: 1,
       type: "palo",
       playerName: "GiocatoreFre",
       playerAvatar: "/placeholder.svg",
+      playerId: 101,
       girlName: "Anna",
       details: "Usciti insieme, ma alla fine niente di che...",
       date: "2025-04-10",
       image: "/placeholder.svg",
       votes: { positive: 5, negative: 1 },
-      hasVoted: false
+      hasVoted: false,
+      statPoints: {
+        coraggio: { positive: 2, negative: 0, voters: ["Player1", "Player2"] },
+        endurance: { positive: 1, negative: 0, voters: ["Player3"] },
+        dribbling: { positive: 0, negative: 0, voters: [] },
+        humor: { positive: 3, negative: 1, voters: ["Player1", "Player2", "Player4"] },
+        resistenza: { positive: 0, negative: 0, voters: [] },
+        social: { positive: 1, negative: 0, voters: ["Player5"] },
+      }
     },
     {
       id: 2,
       type: "conquista",
       playerName: "AmicoFre",
       playerAvatar: "/placeholder.svg",
+      playerId: 102,
       girlName: "Laura",
       details: "Serata straordinaria al locale!",
       date: "2025-04-05",
       image: null,
       votes: { positive: 7, negative: 0 },
-      hasVoted: true
+      hasVoted: true,
+      statPoints: {
+        coraggio: { positive: 3, negative: 0, voters: ["Player1", "Player2", "Player3"] },
+        endurance: { positive: 4, negative: 0, voters: ["Player4", "Player5", "Player6", "Player7"] },
+        dribbling: { positive: 2, negative: 1, voters: ["Player8", "Player9"] },
+        humor: { positive: 1, negative: 0, voters: ["Player10"] },
+        resistenza: { positive: 3, negative: 0, voters: ["Player11", "Player12", "Player13"] },
+        social: { positive: 5, negative: 1, voters: ["Player14", "Player15", "Player16", "Player17", "Player18"] },
+      }
     }
-  ];
+  ]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,6 +98,8 @@ const Stats = () => {
       return;
     }
 
+    // In a real app, we would save this to a database
+    // For now, just show a success message
     toast.success(
       `${eventType === 'palo' ? 'Palo' : 'Conquista'} registrato con successo!`,
       {
@@ -85,11 +114,77 @@ const Stats = () => {
   };
 
   const handleVote = (eventId: number, isPositive: boolean) => {
+    setTeamEvents(events => 
+      events.map(event => {
+        if (event.id === eventId) {
+          const updatedEvent = { 
+            ...event,
+            votes: {
+              ...event.votes,
+              positive: isPositive ? event.votes.positive + 1 : event.votes.positive,
+              negative: !isPositive ? event.votes.negative + 1 : event.votes.negative
+            },
+            hasVoted: true
+          };
+          return updatedEvent;
+        }
+        return event;
+      })
+    );
     toast.success(`Voto registrato con successo!`);
   };
 
-  const handleStatRating = (eventId: number, stat: string) => {
-    toast.success(`Hai aggiunto +1 a ${stat}!`);
+  const getCurrentUser = () => {
+    // In a real app, get this from authentication state
+    return "CurrentUser";
+  };
+
+  const handleStatRating = (eventId: number, playerId: number, stat: string, isPositive: boolean = true) => {
+    const currentUser = getCurrentUser();
+    
+    // Check if the user has already voted on this stat for this player
+    const existingVote = playerStatVotes.find(
+      vote => vote.playerId === playerId && vote.statName === stat
+    );
+    
+    if (existingVote) {
+      toast.error("Hai già assegnato un punto in questa caratteristica", {
+        icon: <X className="h-4 w-4 text-red-500" />
+      });
+      return;
+    }
+    
+    // Update the events
+    setTeamEvents(events => 
+      events.map(event => {
+        if (event.id === eventId) {
+          const updatedStatPoints = { ...event.statPoints };
+          
+          if (!updatedStatPoints[stat]) {
+            updatedStatPoints[stat] = { positive: 0, negative: 0, voters: [] };
+          }
+          
+          if (isPositive) {
+            updatedStatPoints[stat].positive += 1;
+          } else {
+            updatedStatPoints[stat].negative += 1;
+          }
+          
+          updatedStatPoints[stat].voters.push(currentUser);
+          
+          return { ...event, statPoints: updatedStatPoints };
+        }
+        return event;
+      })
+    );
+    
+    // Add the vote to our tracking state
+    setPlayerStatVotes([
+      ...playerStatVotes,
+      { playerId, statName: stat, value: isPositive ? 1 : -1 }
+    ]);
+    
+    toast.success(`Hai aggiunto ${isPositive ? '+1' : '-1'} a ${stat}!`);
   };
 
   const statOptions = ["coraggio", "endurance", "dribbling", "humor", "resistenza", "social"];
@@ -273,29 +368,79 @@ const Stats = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Stat ratings summary */}
+                    <div className="bg-muted/20 rounded-md p-3 mb-4">
+                      <h4 className="text-sm font-medium mb-2">Punti Stats:</h4>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        {statOptions.map(stat => {
+                          const statData = event.statPoints[stat] || { positive: 0, negative: 0, voters: [] };
+                          return (
+                            <div key={stat} className="flex items-center justify-between">
+                              <span className="capitalize">{stat}:</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-green-500">+{statData.positive}</span>
+                                <span>/</span>
+                                <span className="text-red-500">-{statData.negative}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    
                     <div>
-                      <p className="text-sm font-medium mb-2">Aggiungi punti alle statistiche:</p>
+                      <p className="text-sm font-medium mb-2">Modifica statistiche:</p>
                       <div className="flex flex-wrap gap-2">
-                        {statOptions.map(stat => (
-                          <TooltipProvider key={stat}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="h-8 px-2 py-1 capitalize"
-                                  onClick={() => handleStatRating(event.id, stat)}
-                                >
-                                  <PlusCircle className="h-3 w-3 mr-1" /> 
-                                  {stat}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Aggiungi +1 a {stat}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ))}
+                        {statOptions.map(stat => {
+                          // Check if current user has already voted on this stat
+                          const hasVoted = playerStatVotes.some(
+                            vote => vote.playerId === event.playerId && vote.statName === stat
+                          );
+                          
+                          return (
+                            <div key={stat} className="flex items-center">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="h-8 px-2 py-1 capitalize"
+                                      onClick={() => handleStatRating(event.id, event.playerId, stat, true)}
+                                      disabled={hasVoted}
+                                    >
+                                      <PlusCircle className="h-3 w-3 mr-1 text-green-500" /> 
+                                      {stat}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{hasVoted ? "Hai già votato" : `Aggiungi +1 a ${stat}`}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="h-8 w-8 ml-1"
+                                      onClick={() => handleStatRating(event.id, event.playerId, stat, false)}
+                                      disabled={hasVoted}
+                                    >
+                                      <MinusCircle className="h-3 w-3 text-red-500" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{hasVoted ? "Hai già votato" : `Togli -1 a ${stat}`}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </CardContent>
@@ -310,3 +455,4 @@ const Stats = () => {
 };
 
 export default Stats;
+

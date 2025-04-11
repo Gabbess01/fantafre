@@ -41,6 +41,7 @@ const App = () => (
               <Route path="/rules" element={<Rules />} />
               <Route path="/create-player" element={<CreatePlayer />} />
               <Route path="/team/:teamId" element={<TeamDashboard />} />
+              <Route path="/player/:playerId" element={<Profile />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
@@ -61,3 +62,4 @@ const App = () => (
 );
 
 export default App;
+

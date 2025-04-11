@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,26 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, PlusCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface TeamEvent {
+  id: number;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  stats?: {
+    tentativi: number;
+    pali: number;
+    conquiste: number;
+  };
+}
+
 const TeamEvents = () => {
+  const [upcomingEvents, setUpcomingEvents] = useState<TeamEvent[]>([]);
+  const [pastEvents, setPastEvents] = useState<TeamEvent[]>([]);
+  
   // Mock events data
-  const upcomingEvents = [
+  const allEvents = [
     {
       id: 1,
       title: "Serata in discoteca",
@@ -26,10 +43,7 @@ const TeamEvents = () => {
       time: "19:00",
       location: "Bar Centrale",
       description: "Aperitivo con tutta la squadra per discutere le strategie di approccio."
-    }
-  ];
-  
-  const pastEvents = [
+    },
     {
       id: 3,
       title: "Festa universitaria",
@@ -44,6 +58,33 @@ const TeamEvents = () => {
       }
     }
   ];
+  
+  // Sort events into upcoming and past based on date
+  useEffect(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const upcoming: TeamEvent[] = [];
+    const past: TeamEvent[] = [];
+    
+    allEvents.forEach(event => {
+      const eventDate = new Date(event.date);
+      if (eventDate >= today) {
+        upcoming.push(event);
+      } else {
+        past.push(event);
+      }
+    });
+    
+    // Sort upcoming events by date (nearest first)
+    upcoming.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    // Sort past events by date (most recent first)
+    past.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    setUpcomingEvents(upcoming);
+    setPastEvents(past);
+  }, []);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -134,20 +175,22 @@ const TeamEvents = () => {
                     </CardHeader>
                     <CardContent>
                       <p className="mb-4">{event.description}</p>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-muted/30 rounded-lg p-3 text-center">
-                          <p className="text-sm font-medium">Tentativi</p>
-                          <p className="text-xl font-bold">{event.stats.tentativi}</p>
+                      {event.stats && (
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="bg-muted/30 rounded-lg p-3 text-center">
+                            <p className="text-sm font-medium">Tentativi</p>
+                            <p className="text-xl font-bold">{event.stats.tentativi}</p>
+                          </div>
+                          <div className="bg-muted/30 rounded-lg p-3 text-center">
+                            <p className="text-sm font-medium">Pali</p>
+                            <p className="text-xl font-bold">{event.stats.pali}</p>
+                          </div>
+                          <div className="bg-muted/30 rounded-lg p-3 text-center">
+                            <p className="text-sm font-medium">Conquiste</p>
+                            <p className="text-xl font-bold">{event.stats.conquiste}</p>
+                          </div>
                         </div>
-                        <div className="bg-muted/30 rounded-lg p-3 text-center">
-                          <p className="text-sm font-medium">Pali</p>
-                          <p className="text-xl font-bold">{event.stats.pali}</p>
-                        </div>
-                        <div className="bg-muted/30 rounded-lg p-3 text-center">
-                          <p className="text-sm font-medium">Conquiste</p>
-                          <p className="text-xl font-bold">{event.stats.conquiste}</p>
-                        </div>
-                      </div>
+                      )}
                     </CardContent>
                     <CardFooter className="flex justify-end">
                       <Button variant="outline" size="sm">Vedi Dettagli</Button>
@@ -171,3 +214,4 @@ const TeamEvents = () => {
 };
 
 export default TeamEvents;
+

@@ -38,8 +38,42 @@ const CreateTeamEvent = () => {
       toast.error("Inserisci un orario per l'evento");
       return;
     }
+
+    // Create event object
+    const newEvent = {
+      id: Math.floor(Math.random() * 10000),
+      title,
+      description,
+      location,
+      date: date.toISOString().split('T')[0],
+      time,
+    };
+
+    // In a real app, this would save to a database or state management
+    // For now, we'll pretend it's saved
     
-    toast.success("Evento creato con successo!");
+    // Check if event is in the future or past
+    const eventDate = new Date(date);
+    eventDate.setHours(
+      parseInt(time.split(':')[0]),
+      parseInt(time.split(':')[1]),
+      0,
+      0
+    );
+    
+    const now = new Date();
+    const isUpcoming = eventDate >= now;
+    
+    if (isUpcoming) {
+      toast.success("Evento creato con successo!", {
+        description: "L'evento è stato aggiunto ai prossimi eventi."
+      });
+    } else {
+      toast.success("Evento storico aggiunto con successo!", {
+        description: "L'evento è stato aggiunto agli eventi passati."
+      });
+    }
+    
     navigate("/team-events");
   };
   
@@ -114,6 +148,7 @@ const CreateTeamEvent = () => {
                         selected={date}
                         onSelect={setDate}
                         initialFocus
+                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
@@ -150,3 +185,4 @@ const CreateTeamEvent = () => {
 };
 
 export default CreateTeamEvent;
+
