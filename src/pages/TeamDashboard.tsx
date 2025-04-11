@@ -750,8 +750,7 @@ const TeamDashboard = () => {
                   </div>      
                 </div>
               </div>
-            </CardContent>
-            <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
                   <Button asChild size="sm">
                     <Link to="/team-events">
                       <Calendar className="mr-2 h-4 w-4" />
@@ -765,6 +764,7 @@ const TeamDashboard = () => {
                     </Link>
                   </Button>
                 </div>
+            </CardContent>
           </Card>
         </div>
       </div>
