@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
 import { 
   Trophy, Users, Settings, LogOut, User, Award, 
-  TrendingUp, Calendar, BarChart3, UserPlus 
+  TrendingUp, Calendar, BarChart3, UserPlus, PlusCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -241,6 +241,12 @@ const TeamDashboard = () => {
                 <BarChart3 className="mr-2 h-5 w-5" />
                 Statistiche
               </Button>
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link to="/team-events">
+                  <Calendar className="mr-2 h-5 w-5" />
+                  Eventi
+                </Link>
+              </Button>
             </div>
             
             <Separator className="my-4" />
@@ -263,158 +269,180 @@ const TeamDashboard = () => {
             <CardHeader>
               <CardTitle className="text-2xl">{team.name}</CardTitle>
               <CardDescription>Formazione {team.formation}</CardDescription>
+              <div className="flex justify-end">
+                <Button asChild size="sm" className="mt-2">
+                  <Link to="/team-events/create">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Aggiungi Evento
+                  </Link>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="relative w-full aspect-[2/3] bg-gradient-to-b from-green-600/40 to-green-700/60 rounded-lg overflow-hidden">
-                <div className="absolute inset-0">
-                  <div className="absolute top-1/2 left-0 right-0 border-t-2 border-white/30 transform -translate-y-1/2"></div>
-                  <div className="absolute top-1/2 left-1/2 w-24 h-24 border-2 border-white/30 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-9">
+                  <div className="relative w-full aspect-[2/3] bg-gradient-to-b from-green-600/40 to-green-700/60 rounded-lg overflow-hidden">
+                    <div className="absolute inset-0">
+                      <div className="absolute top-1/2 left-0 right-0 border-t-2 border-white/30 transform -translate-y-1/2"></div>
+                      <div className="absolute top-1/2 left-1/2 w-24 h-24 border-2 border-white/30 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                    </div>
+                    
+                    <div className="absolute inset-0 grid grid-rows-4 p-4">
+                      {["ST-L", "ST-C", "ST-R"].map((pos) => {
+                        const player = getPlayerInPosition(pos);
+                        return (
+                          <div 
+                            key={pos}
+                            className="player-position relative"
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, pos)}
+                          >
+                            <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                              {player ? (
+                                <>
+                                  <AvatarImage src={player.avatar} alt={player.name} />
+                                  <AvatarFallback className="bg-fregna-primary text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                                </>
+                              ) : (
+                                <AvatarFallback className="bg-fregna-primary/40 text-white">A</AvatarFallback>
+                              )}
+                            </Avatar>
+                            {player && (
+                              <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
+                                {player.rating}
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                      
+                      {["CM-L", "CM-C", "CM-R"].map((pos) => {
+                        const player = getPlayerInPosition(pos);
+                        return (
+                          <div 
+                            key={pos}
+                            className="player-position relative"
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, pos)}
+                          >
+                            <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                              {player ? (
+                                <>
+                                  <AvatarImage src={player.avatar} alt={player.name} />
+                                  <AvatarFallback className="bg-fregna-secondary text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                                </>
+                              ) : (
+                                <AvatarFallback className="bg-fregna-secondary/40 text-white">C</AvatarFallback>
+                              )}
+                            </Avatar>
+                            {player && (
+                              <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
+                                {player.rating}
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                      
+                      {["DF-L", "DF-LC", "DF-RC", "DF-R"].map((pos) => {
+                        const player = getPlayerInPosition(pos);
+                        return (
+                          <div 
+                            key={pos}
+                            className="player-position relative"
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, pos)}
+                          >
+                            <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                              {player ? (
+                                <>
+                                  <AvatarImage src={player.avatar} alt={player.name} />
+                                  <AvatarFallback className="bg-blue-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                                </>
+                              ) : (
+                                <AvatarFallback className="bg-blue-500/40 text-white">D</AvatarFallback>
+                              )}
+                            </Avatar>
+                            {player && (
+                              <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
+                                {player.rating}
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                      
+                      {["GK"].map((pos) => {
+                        const player = getPlayerInPosition(pos);
+                        return (
+                          <div 
+                            key={pos}
+                            className="player-position relative"
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, pos)}
+                          >
+                            <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
+                              {player ? (
+                                <>
+                                  <AvatarImage src={player.avatar} alt={player.name} />
+                                  <AvatarFallback className="bg-yellow-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
+                                </>
+                              ) : (
+                                <AvatarFallback className="bg-yellow-500/40 text-white">P</AvatarFallback>
+                              )}
+                            </Avatar>
+                            {player && (
+                              <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0 z-10">
+                                {player.rating}
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="absolute inset-0 grid grid-rows-4 p-4">
-                  {["ST-L", "ST-C", "ST-R"].map((pos) => {
-                    const player = getPlayerInPosition(pos);
-                    return (
-                      <div 
-                        key={pos}
-                        className="player-position relative"
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, pos)}
-                      >
-                        <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
-                          {player ? (
-                            <>
+                <div className="col-span-3">
+                  <Card className="h-full">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Panchina</CardTitle>
+                      <CardDescription className="text-xs">Trascina i giocatori sul campo</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-2">
+                      <div className="flex flex-col gap-4 items-center overflow-auto max-h-[400px]">
+                        {getBenchPlayers().map(player => (
+                          <div 
+                            key={player.id} 
+                            draggable 
+                            onDragStart={() => handleDragStart(player)}
+                            className="cursor-grab relative"
+                          >
+                            <Avatar className="w-12 h-12 border-2 border-muted-foreground/20 hover:border-primary transition-colors">
                               <AvatarImage src={player.avatar} alt={player.name} />
-                              <AvatarFallback className="bg-fregna-primary text-white">{player.name.substring(0, 1)}</AvatarFallback>
-                              <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
-                                {player.rating}
-                              </Badge>
-                            </>
-                          ) : (
-                            <AvatarFallback className="bg-fregna-primary/40 text-white">A</AvatarFallback>
-                          )}
-                        </Avatar>
+                              <AvatarFallback>{player.name.substring(0, 1)}</AvatarFallback>
+                            </Avatar>
+                            <Badge className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center p-0">
+                              {player.rating}
+                            </Badge>
+                            <p className="text-xs text-center mt-1 font-medium">{player.name}</p>
+                            <p className="text-xs text-center text-muted-foreground capitalize">{player.position}</p>
+                          </div>
+                        ))}
+                        {getBenchPlayers().length === 0 && (
+                          <p className="text-xs text-muted-foreground py-4 text-center">Tutti i giocatori sono sul campo</p>
+                        )}
                       </div>
-                    );
-                  })}
-                  
-                  {["CM-L", "CM-C", "CM-R"].map((pos) => {
-                    const player = getPlayerInPosition(pos);
-                    return (
-                      <div 
-                        key={pos}
-                        className="player-position relative"
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, pos)}
-                      >
-                        <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
-                          {player ? (
-                            <>
-                              <AvatarImage src={player.avatar} alt={player.name} />
-                              <AvatarFallback className="bg-fregna-secondary text-white">{player.name.substring(0, 1)}</AvatarFallback>
-                              <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
-                                {player.rating}
-                              </Badge>
-                            </>
-                          ) : (
-                            <AvatarFallback className="bg-fregna-secondary/40 text-white">C</AvatarFallback>
-                          )}
-                        </Avatar>
-                      </div>
-                    );
-                  })}
-                  
-                  {["DF-L", "DF-LC", "DF-RC", "DF-R"].map((pos) => {
-                    const player = getPlayerInPosition(pos);
-                    return (
-                      <div 
-                        key={pos}
-                        className="player-position relative"
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, pos)}
-                      >
-                        <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
-                          {player ? (
-                            <>
-                              <AvatarImage src={player.avatar} alt={player.name} />
-                              <AvatarFallback className="bg-blue-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
-                              <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
-                                {player.rating}
-                              </Badge>
-                            </>
-                          ) : (
-                            <AvatarFallback className="bg-blue-500/40 text-white">D</AvatarFallback>
-                          )}
-                        </Avatar>
-                      </div>
-                    );
-                  })}
-                  
-                  {["GK"].map((pos) => {
-                    const player = getPlayerInPosition(pos);
-                    return (
-                      <div 
-                        key={pos}
-                        className="player-position relative"
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, pos)}
-                      >
-                        <Avatar className={`w-12 h-12 border-2 ${player ? 'border-yellow-400' : 'border-white/50'}`}>
-                          {player ? (
-                            <>
-                              <AvatarImage src={player.avatar} alt={player.name} />
-                              <AvatarFallback className="bg-yellow-500 text-white">{player.name.substring(0, 1)}</AvatarFallback>
-                              <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
-                                {player.rating}
-                              </Badge>
-                            </>
-                          ) : (
-                            <AvatarFallback className="bg-yellow-500/40 text-white">P</AvatarFallback>
-                          )}
-                        </Avatar>
-                      </div>
-                    );
-                  })}
+                    </CardContent>
+                    <CardFooter className="pt-0 justify-center">
+                      <Button size="sm" variant="outline" className="w-full">
+                        <UserPlus className="mr-1 h-3 w-3" />
+                        <span className="text-xs">Aggiungi Giocatore</span>
+                      </Button>
+                    </CardFooter>
+                  </Card>
                 </div>
               </div>
-              
-              <Card className="mt-8">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Panchina</CardTitle>
-                  <CardDescription>Trascina i giocatori sul campo per impostare la formazione</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-4 items-center justify-center">
-                    {getBenchPlayers().map(player => (
-                      <div 
-                        key={player.id} 
-                        draggable 
-                        onDragStart={() => handleDragStart(player)}
-                        className="cursor-grab relative"
-                      >
-                        <Avatar className="w-14 h-14 border-2 border-muted-foreground/20 hover:border-primary transition-colors">
-                          <AvatarImage src={player.avatar} alt={player.name} />
-                          <AvatarFallback>{player.name.substring(0, 1)}</AvatarFallback>
-                          <Badge className="absolute -top-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center p-0">
-                            {player.rating}
-                          </Badge>
-                        </Avatar>
-                        <p className="text-xs text-center mt-1 font-medium">{player.name}</p>
-                        <p className="text-xs text-center text-muted-foreground capitalize">{player.position}</p>
-                      </div>
-                    ))}
-                    {getBenchPlayers().length === 0 && (
-                      <p className="text-sm text-muted-foreground py-4">Tutti i giocatori sono sul campo</p>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-0 justify-center">
-                  <Button size="sm" variant="outline">
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Aggiungi Giocatore
-                  </Button>
-                </CardFooter>
-              </Card>
             </CardContent>
           </Card>
           

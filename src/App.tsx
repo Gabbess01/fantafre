@@ -21,6 +21,8 @@ import Stats from "./pages/Stats";
 import Teams from "./pages/Teams";
 import Cards from "./pages/Cards";
 import PlayerRatings from "./pages/PlayerRatings";
+import TeamEvents from "./pages/TeamEvents";
+import CreateTeamEvent from "./pages/CreateTeamEvent";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ const App = () => (
               <Route path="/teams" element={<Teams />} />
               <Route path="/cards" element={<Cards />} />
               <Route path="/player-ratings" element={<PlayerRatings />} />
+              <Route path="/team-events" element={<TeamEvents />} />
+              <Route path="/team-events/create" element={<CreateTeamEvent />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
