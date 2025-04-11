@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -64,7 +63,7 @@ const PlayerAffiliationCard = ({ playerTeam }: PlayerAffiliationCardProps) => {
               <h3 className="font-semibold">{playerTeam.teamName}</h3>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>Ruolo: {playerTeam.position}</span>
-                <Badge variant="outline" size="sm" className="text-xs">
+                <Badge variant="outline" className="text-xs">
                   {playerTeam.playerCount} Giocatori
                 </Badge>
               </div>
