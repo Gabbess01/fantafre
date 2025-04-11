@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Star, Trophy, Upload, Check, X, PlusCircle, MinusCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface StatVote {
   playerId: number;
@@ -369,7 +370,7 @@ const Stats = () => {
                       )}
                     </div>
 
-                    {/* Stat ratings summary */}
+                    {/* Stat ratings summary - Redesigned to be cleaner */}
                     <div className="bg-muted/20 rounded-md p-3 mb-4">
                       <h4 className="text-sm font-medium mb-2">Punti Stats:</h4>
                       <div className="grid grid-cols-3 gap-2 text-xs">
@@ -389,9 +390,10 @@ const Stats = () => {
                       </div>
                     </div>
                     
+                    {/* Redesigned stat voting interface */}
                     <div>
                       <p className="text-sm font-medium mb-2">Modifica statistiche:</p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         {statOptions.map(stat => {
                           // Check if current user has already voted on this stat
                           const hasVoted = playerStatVotes.some(
@@ -399,45 +401,47 @@ const Stats = () => {
                           );
                           
                           return (
-                            <div key={stat} className="flex items-center">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline" 
-                                      className="h-8 px-2 py-1 capitalize"
-                                      onClick={() => handleStatRating(event.id, event.playerId, stat, true)}
-                                      disabled={hasVoted}
-                                    >
-                                      <PlusCircle className="h-3 w-3 mr-1 text-green-500" /> 
-                                      {stat}
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>{hasVoted ? "Hai già votato" : `Aggiungi +1 a ${stat}`}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline" 
-                                      className="h-8 w-8 ml-1"
-                                      onClick={() => handleStatRating(event.id, event.playerId, stat, false)}
-                                      disabled={hasVoted}
-                                    >
-                                      <MinusCircle className="h-3 w-3 text-red-500" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>{hasVoted ? "Hai già votato" : `Togli -1 a ${stat}`}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                            <div key={stat} className="flex flex-col">
+                              <div className="text-xs mb-1 font-medium capitalize">{stat}</div>
+                              <div className="flex items-center justify-center">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="h-8 w-8 rounded-r-none border-r-0"
+                                        onClick={() => handleStatRating(event.id, event.playerId, stat, true)}
+                                        disabled={hasVoted}
+                                      >
+                                        <PlusCircle className="h-3 w-3 text-green-500" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{hasVoted ? "Hai già votato" : `Aggiungi +1 a ${stat}`}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="h-8 w-8 rounded-l-none"
+                                        onClick={() => handleStatRating(event.id, event.playerId, stat, false)}
+                                        disabled={hasVoted}
+                                      >
+                                        <MinusCircle className="h-3 w-3 text-red-500" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{hasVoted ? "Hai già votato" : `Togli -1 a ${stat}`}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
                             </div>
                           );
                         })}
@@ -455,4 +459,3 @@ const Stats = () => {
 };
 
 export default Stats;
-

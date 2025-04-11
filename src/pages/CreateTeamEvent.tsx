@@ -185,4 +185,3 @@ const CreateTeamEvent = () => {
 };
 
 export default CreateTeamEvent;
-
